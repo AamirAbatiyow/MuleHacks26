@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { ReactNode } from 'react';
+import { needsRegistrationAnswers, RegistrationPrompt } from './RegistrationPrompt';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -8,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiresOnboarding = false }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, updateUserProfile } = useAuth();
 
   if (loading) {
     return (
@@ -26,5 +27,10 @@ export function ProtectedRoute({ children, requiresOnboarding = false }: Protect
     return <Navigate to="/onboarding" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {needsRegistrationAnswers(user) && <RegistrationPrompt onSubmit={updateUserProfile} />}
+    </>
+  );
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   LayoutDashboard,
@@ -13,6 +13,7 @@ import { AnnouncementManager } from "./AnnouncementManager";
 import { UsersList } from "./UsersList";
 import { TeamsList } from "./TeamsList";
 import { SeoHead } from "../SeoHead";
+import { getRegisteredUsersForAdmin, getTeams, type PublicUserRow } from "@/lib/hackathonStorage";
 
 type AdminTab = "dashboard" | "announcements" | "users" | "teams";
 
@@ -23,10 +24,37 @@ const nav: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "teams", label: "Teams", icon: UsersRound },
 ];
 
+function countBy(users: PublicUserRow[], pick: (user: PublicUserRow) => boolean) {
+  return users.filter(pick).length;
+}
+
 export function AdminDashboard() {
   const [tab, setTab] = useState<AdminTab>("dashboard");
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState<{
+    users: PublicUserRow[];
+    teamCount: number;
+  } | null>(null);
+  const [statsError, setStatsError] = useState("");
+
+  useEffect(() => {
+    if (tab !== "dashboard") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [users, teams] = await Promise.all([getRegisteredUsersForAdmin(), getTeams()]);
+        if (!cancelled) setStats({ users, teamCount: teams.length });
+      } catch (error) {
+        if (!cancelled) {
+          setStatsError(error instanceof Error ? error.message : "Failed to load stats");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
 
   return (
     <div className="min-h-screen bg-brand flex flex-col lg:flex-row">
@@ -95,12 +123,35 @@ export function AdminDashboard() {
 
         <main className="flex-1 overflow-auto p-6 lg:p-10">
           {tab === "dashboard" && (
-            <div className="max-w-3xl space-y-6">
+            <div className="max-w-5xl space-y-6">
               <h1 className="text-3xl text-white">Admin dashboard</h1>
-              <p className="text-white/70">
-                Use the sidebar to manage announcements, view registered users, and browse teams. Data is stored in
-                MongoDB Atlas.
-              </p>
+              {statsError ? (
+                <p className="text-red-300 text-sm">{statsError}</p>
+              ) : !stats ? (
+                <p className="text-white/60">Loading numbers…</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    ["Registered participants", stats.users.length],
+                    ["Onboarding complete", countBy(stats.users, (person) => person.hasCompletedOnboarding)],
+                    ["Onboarding pending", countBy(stats.users, (person) => !person.hasCompletedOnboarding)],
+                    ["Rules acknowledged", countBy(stats.users, (person) => Boolean(person.rulesAcknowledged))],
+                    ["Rules not yet", countBy(stats.users, (person) => !person.rulesAcknowledged)],
+                    ["High school", countBy(stats.users, (person) => person.studentLevel === "high_school")],
+                    ["Undergraduate", countBy(stats.users, (person) => person.studentLevel === "undergraduate")],
+                    ["Graduate", countBy(stats.users, (person) => person.studentLevel === "graduate")],
+                    ["Already have a team", countBy(stats.users, (person) => person.teamPreference === "have_team")],
+                    ["Going solo", countBy(stats.users, (person) => person.teamPreference === "solo")],
+                    ["Want to make a team", countBy(stats.users, (person) => person.teamPreference === "make_team")],
+                    ["Teams created", stats.teamCount],
+                  ].map(([label, value]) => (
+                    <div key={String(label)} className="bg-black/30 border border-white/20 rounded-xl p-5">
+                      <p className="text-3xl text-white">{value}</p>
+                      <p className="text-white/70 text-sm mt-1">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="grid sm:grid-cols-2 gap-4">
                 <button
                   type="button"

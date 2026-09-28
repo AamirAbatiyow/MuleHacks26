@@ -21,6 +21,10 @@ export interface User {
   github?: string;
   linkedin?: string;
   hasCompletedOnboarding: boolean;
+  rulesAcknowledged?: boolean;
+  rulesAcknowledgedAt?: string | null;
+  studentLevel?: "high_school" | "undergraduate" | "graduate" | null;
+  teamPreference?: "have_team" | "solo" | "make_team" | null;
   isAdmin?: boolean;
 }
 

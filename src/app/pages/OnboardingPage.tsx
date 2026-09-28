@@ -3,9 +3,15 @@ import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { SeoHead } from '../components/SeoHead';
-import { User, GraduationCap, BookOpen, Phone, Github, Linkedin, ChevronRight } from 'lucide-react';
+import { User, GraduationCap, BookOpen, Phone, Github, Linkedin, ChevronRight, FileText } from 'lucide-react';
+import {
+  RegistrationQuestions,
+  registrationAnswersComplete,
+  type StudentLevel,
+  type TeamPreference,
+} from '../components/RegistrationQuestions';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 export function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -19,6 +25,9 @@ export function OnboardingPage() {
     shirtSize: '',
     github: '',
     linkedin: '',
+    studentLevel: '',
+    teamPreference: '',
+    rulesAcknowledged: false,
   });
   const { updateUserProfile } = useAuth();
   const navigate = useNavigate();
@@ -35,7 +44,18 @@ export function OnboardingPage() {
 
     try {
       await updateUserProfile({
-        ...formData,
+        name: formData.name,
+        university: formData.university,
+        major: formData.major,
+        year: formData.year,
+        phone: formData.phone,
+        dietaryRestrictions: formData.dietaryRestrictions,
+        shirtSize: formData.shirtSize,
+        github: formData.github,
+        linkedin: formData.linkedin,
+        studentLevel: formData.studentLevel as StudentLevel,
+        teamPreference: formData.teamPreference as TeamPreference,
+        rulesAcknowledged: true,
         hasCompletedOnboarding: true,
       });
       navigate('/dashboard');
@@ -60,6 +80,12 @@ export function OnboardingPage() {
         );
       case 5:
         return true;
+      case 6:
+        return registrationAnswersComplete(
+          formData.rulesAcknowledged,
+          formData.studentLevel,
+          formData.teamPreference
+        );
       default:
         return false;
     }
@@ -281,6 +307,32 @@ export function OnboardingPage() {
                     </p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div>
+                <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center mx-auto mb-6">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-3xl text-white text-center mb-3">Rules and your plans</h2>
+                <p className="text-white/80 text-center mb-8">
+                  Confirm the rules and tell us about your student status and team
+                </p>
+                <RegistrationQuestions
+                  rulesAcknowledged={formData.rulesAcknowledged}
+                  studentLevel={formData.studentLevel}
+                  teamPreference={formData.teamPreference}
+                  onRulesChange={(value) =>
+                    setFormData((prev) => ({ ...prev, rulesAcknowledged: value }))
+                  }
+                  onStudentLevelChange={(value) =>
+                    setFormData((prev) => ({ ...prev, studentLevel: value }))
+                  }
+                  onTeamPreferenceChange={(value) =>
+                    setFormData((prev) => ({ ...prev, teamPreference: value }))
+                  }
+                />
               </div>
             )}
           </motion.div>

@@ -22,6 +22,9 @@ function getAppUrl(req) {
 
 const router = Router();
 
+const STUDENT_LEVELS = new Set(["high_school", "undergraduate", "graduate"]);
+const TEAM_PREFERENCES = new Set(["have_team", "solo", "make_team"]);
+
 const PROFILE_FIELDS = [
   "name",
   "university",
@@ -185,6 +188,30 @@ router.patch("/profile", requireAuth, async (req, res) => {
       if (req.body?.[field] !== undefined) {
         updates[field] = req.body[field];
       }
+    }
+
+    if (req.body?.studentLevel !== undefined) {
+      const studentLevel = String(req.body.studentLevel);
+      if (!STUDENT_LEVELS.has(studentLevel)) {
+        return res.status(400).json({ ok: false, error: "Invalid student level." });
+      }
+      updates.studentLevel = studentLevel;
+    }
+
+    if (req.body?.teamPreference !== undefined) {
+      const teamPreference = String(req.body.teamPreference);
+      if (!TEAM_PREFERENCES.has(teamPreference)) {
+        return res.status(400).json({ ok: false, error: "Invalid team preference." });
+      }
+      updates.teamPreference = teamPreference;
+    }
+
+    if (req.body?.rulesAcknowledged !== undefined) {
+      if (typeof req.body.rulesAcknowledged !== "boolean") {
+        return res.status(400).json({ ok: false, error: "Invalid rules acknowledgment." });
+      }
+      updates.rulesAcknowledged = req.body.rulesAcknowledged;
+      updates.rulesAcknowledgedAt = req.body.rulesAcknowledged ? new Date() : null;
     }
 
     Object.assign(req.user, updates);

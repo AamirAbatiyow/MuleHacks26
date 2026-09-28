@@ -35,6 +35,9 @@ export type PublicUserRow = {
   github?: string;
   linkedin?: string;
   hasCompletedOnboarding: boolean;
+  rulesAcknowledged?: boolean;
+  studentLevel?: "high_school" | "undergraduate" | "graduate" | null;
+  teamPreference?: "have_team" | "solo" | "make_team" | null;
 };
 
 export async function getAnnouncements(): Promise<StoredAnnouncement[]> {
@@ -92,6 +95,10 @@ export async function leaveTeam(teamId: string): Promise<void> {
 export async function getRegisteredUsersForAdmin(): Promise<PublicUserRow[]> {
   const data = await apiFetch<{ users: PublicUserRow[] }>("/api/users");
   return data.users ?? [];
+}
+
+export async function dropRegisteredUser(email: string): Promise<void> {
+  await apiFetch(`/api/users/${encodeURIComponent(email)}`, { method: "DELETE" });
 }
 
 export function formatAnnouncementTime(iso: string): string {
