@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
     rulesAcknowledgedAt: { type: Date, default: null },
     studentLevel: { type: String, default: null },
     teamPreference: { type: String, default: null },
+    referredBy: { type: String, default: null, trim: true, maxlength: 80 },
     isAdmin: { type: Boolean, default: false },
     passwordResetTokenHash: { type: String, default: null },
     passwordResetExpiresAt: { type: Date, default: null },
@@ -52,6 +53,7 @@ export function toPublicUser(doc) {
       : null,
     studentLevel: user.studentLevel || null,
     teamPreference: user.teamPreference || null,
+    referredBy: user.referredBy || null,
     isAdmin: Boolean(user.isAdmin),
   };
 }

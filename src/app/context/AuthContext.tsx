@@ -25,6 +25,7 @@ export interface User {
   rulesAcknowledgedAt?: string | null;
   studentLevel?: "high_school" | "undergraduate" | "graduate" | null;
   teamPreference?: "have_team" | "solo" | "make_team" | null;
+  referredBy?: string | null;
   isAdmin?: boolean;
 }
 

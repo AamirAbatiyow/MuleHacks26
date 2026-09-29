@@ -206,6 +206,14 @@ router.patch("/profile", requireAuth, async (req, res) => {
       updates.teamPreference = teamPreference;
     }
 
+    if (req.body?.referredBy !== undefined) {
+      const referredBy = String(req.body.referredBy).trim().slice(0, 80);
+      if (!referredBy) {
+        return res.status(400).json({ ok: false, error: "Referral is required." });
+      }
+      updates.referredBy = referredBy.toLowerCase() === "none" ? "none" : referredBy;
+    }
+
     if (req.body?.rulesAcknowledged !== undefined) {
       if (typeof req.body.rulesAcknowledged !== "boolean") {
         return res.status(400).json({ ok: false, error: "Invalid rules acknowledgment." });

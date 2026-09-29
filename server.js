@@ -9,6 +9,7 @@ import authRoutes from "./server/routes/auth.js";
 import usersRoutes from "./server/routes/users.js";
 import announcementsRoutes from "./server/routes/announcements.js";
 import teamsRoutes from "./server/routes/teams.js";
+import statsRoutes from "./server/routes/stats.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, "dist");
@@ -157,6 +158,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/announcements", announcementsRoutes);
 app.use("/api/teams", teamsRoutes);
+app.use("/api/stats", statsRoutes);
 
 const distExists = fs.existsSync(distPath);
 if (distExists) {

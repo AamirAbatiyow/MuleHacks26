@@ -13,7 +13,12 @@ import { AnnouncementManager } from "./AnnouncementManager";
 import { UsersList } from "./UsersList";
 import { TeamsList } from "./TeamsList";
 import { SeoHead } from "../SeoHead";
-import { getRegisteredUsersForAdmin, getTeams, type PublicUserRow } from "@/lib/hackathonStorage";
+import {
+  getRegisteredUsersForAdmin,
+  getTeams,
+  getTopReferrer,
+  type PublicUserRow,
+} from "@/lib/hackathonStorage";
 
 type AdminTab = "dashboard" | "announcements" | "users" | "teams";
 
@@ -35,6 +40,7 @@ export function AdminDashboard() {
   const [stats, setStats] = useState<{
     users: PublicUserRow[];
     teamCount: number;
+    topReferrer: { name: string; count: number } | null;
   } | null>(null);
   const [statsError, setStatsError] = useState("");
 
@@ -43,8 +49,12 @@ export function AdminDashboard() {
     let cancelled = false;
     (async () => {
       try {
-        const [users, teams] = await Promise.all([getRegisteredUsersForAdmin(), getTeams()]);
-        if (!cancelled) setStats({ users, teamCount: teams.length });
+        const [users, teams, topReferrer] = await Promise.all([
+          getRegisteredUsersForAdmin(),
+          getTeams(),
+          getTopReferrer(),
+        ]);
+        if (!cancelled) setStats({ users, teamCount: teams.length, topReferrer });
       } catch (error) {
         if (!cancelled) {
           setStatsError(error instanceof Error ? error.message : "Failed to load stats");
@@ -144,6 +154,12 @@ export function AdminDashboard() {
                     ["Going solo", countBy(stats.users, (person) => person.teamPreference === "solo")],
                     ["Want to make a team", countBy(stats.users, (person) => person.teamPreference === "make_team")],
                     ["Teams created", stats.teamCount],
+                    [
+                      "Top referrer",
+                      stats.topReferrer
+                        ? `${stats.topReferrer.name} (${stats.topReferrer.count})`
+                        : "No referrals yet",
+                    ],
                   ].map(([label, value]) => (
                     <div key={String(label)} className="bg-black/30 border border-white/20 rounded-xl p-5">
                       <p className="text-3xl text-white">{value}</p>

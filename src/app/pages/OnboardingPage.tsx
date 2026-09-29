@@ -28,6 +28,8 @@ export function OnboardingPage() {
     studentLevel: '',
     teamPreference: '',
     rulesAcknowledged: false,
+    referredBy: '',
+    noReferral: false,
   });
   const { updateUserProfile } = useAuth();
   const navigate = useNavigate();
@@ -56,6 +58,7 @@ export function OnboardingPage() {
         studentLevel: formData.studentLevel as StudentLevel,
         teamPreference: formData.teamPreference as TeamPreference,
         rulesAcknowledged: true,
+        referredBy: formData.noReferral ? 'none' : formData.referredBy.trim(),
         hasCompletedOnboarding: true,
       });
       navigate('/dashboard');
@@ -81,10 +84,13 @@ export function OnboardingPage() {
       case 5:
         return true;
       case 6:
-        return registrationAnswersComplete(
-          formData.rulesAcknowledged,
-          formData.studentLevel,
-          formData.teamPreference
+        return (
+          registrationAnswersComplete(
+            formData.rulesAcknowledged,
+            formData.studentLevel,
+            formData.teamPreference
+          ) &&
+          (formData.noReferral || formData.referredBy.trim() !== '')
         );
       default:
         return false;
@@ -319,6 +325,39 @@ export function OnboardingPage() {
                 <p className="text-white/80 text-center mb-8">
                   Confirm the rules and tell us about your student status and team
                 </p>
+                <div className="mb-8 text-left">
+                  <label className="block text-white/90 mb-2">Who referred you to Mule Hacks?</label>
+                  <input
+                    type="text"
+                    value={formData.referredBy}
+                    onChange={(event) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        referredBy: event.target.value,
+                        noReferral: false,
+                      }))
+                    }
+                    disabled={formData.noReferral}
+                    maxLength={80}
+                    placeholder="Their name"
+                    className="w-full bg-black/30 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:border-white transition-colors disabled:opacity-50"
+                  />
+                  <label className="mt-3 flex items-start gap-3 text-white/90">
+                    <input
+                      type="checkbox"
+                      checked={formData.noReferral}
+                      onChange={(event) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          noReferral: event.target.checked,
+                          referredBy: event.target.checked ? '' : prev.referredBy,
+                        }))
+                      }
+                      className="mt-1 h-4 w-4 accent-[#6b0000]"
+                    />
+                    <span>No one referred me</span>
+                  </label>
+                </div>
                 <RegistrationQuestions
                   rulesAcknowledged={formData.rulesAcknowledged}
                   studentLevel={formData.studentLevel}

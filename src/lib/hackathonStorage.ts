@@ -92,6 +92,13 @@ export async function leaveTeam(teamId: string): Promise<void> {
   });
 }
 
+export async function getTopReferrer(): Promise<{ name: string; count: number } | null> {
+  const data = await apiFetch<{ referrer: { name: string; count: number } | null }>(
+    "/api/stats/top-referrer"
+  );
+  return data.referrer ?? null;
+}
+
 export async function getRegisteredUsersForAdmin(): Promise<PublicUserRow[]> {
   const data = await apiFetch<{ users: PublicUserRow[] }>("/api/users");
   return data.users ?? [];
