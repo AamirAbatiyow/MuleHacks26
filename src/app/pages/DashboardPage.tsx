@@ -714,36 +714,8 @@ function ResourcesView() {
       content: (
         <div className="space-y-6">
           <h2 className="text-3xl text-white mb-4">Prizes & Awards</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { place: '1st Place', prize: '$5,000', icon: '🥇', color: 'from-red-400 to-red-600' },
-              { place: '2nd Place', prize: '$3,000', icon: '🥈', color: 'from-gray-300 to-gray-500' },
-              { place: '3rd Place', prize: '$2,000', icon: '🥉', color: 'from-orange-400 to-orange-600' },
-            ].map((prize, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-6 text-center hover:bg-red-500/20 hover:border-red-500 transition-all">
-                <div className="text-5xl mb-4">{prize.icon}</div>
-                <h3 className={`text-xl mb-2 bg-gradient-to-r ${prize.color} bg-clip-text text-transparent`}>
-                  {prize.place}
-                </h3>
-                <p className="text-3xl text-white">{prize.prize}</p>
-              </div>
-            ))}
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {[
-              { title: 'Best AI/ML Project', prize: '$1,000' },
-              { title: 'Best Hardware Hack', prize: '$1,000' },
-              { title: 'Best Beginner Project', prize: '$500' },
-              { title: 'Most Creative Solution', prize: '$500' },
-            ].map((special, i) => (
-              <div
-                key={i}
-                className="bg-[#000000]/30 border border-white/20 rounded-lg p-4 flex justify-between hover:bg-red-500/20 hover:border-red-500 transition-all"
-              >
-                <span className="text-white">{special.title}</span>
-                <span className="text-white">{special.prize}</span>
-              </div>
-            ))}
+          <div className="bg-white/5 border border-white/10 rounded-lg p-8">
+            <p className="text-xl text-white/80">Prizes will be announced at the event.</p>
           </div>
         </div>
       ),
