@@ -21,7 +21,7 @@ export function LandingPage() {
     <div className="min-h-screen bg-brand">
       <SeoHead
         title="Mule Hacks 2026 | University of Central Missouri Hackathon"
-        description="Mule Hacks 2026 is a free 24-hour student hackathon at the W.C. Morris Science Building on the University of Central Missouri campus in Warrensburg, MO on October 3–4, 2026. Register to build, learn, and compete."
+        description="Mule Hacks 2026 is a free 24-hour student hackathon at the W.C. Morris Science Building on the University of Central Missouri campus in Warrensburg, MO on October 3–4, 2026. Registration is closed. Sign in if you already have an account."
       />
       {/* Hero Section */}
       <nav aria-label="Primary" className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-md border-b border-white/20">
@@ -54,6 +54,12 @@ export function LandingPage() {
               >
                 Discord
               </a>
+              <Link
+                to="/auth"
+                className="bg-[#6b0000] hover:bg-[#8b0000] text-white px-4 py-2 rounded-lg transition-all"
+              >
+                Sign In
+              </Link>
             </motion.div>
 
             {/* Mobile Menu Button */}
@@ -116,9 +122,9 @@ export function LandingPage() {
                 >
                   Discord
                 </a>
-                <Link to="/auth?mode=register" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
                   <button className="w-full bg-[#6b0000] hover:bg-[#8b0000] text-white px-6 py-3 rounded-lg transition-all mt-2">
-                    Register Now
+                    Sign In
                   </button>
                 </Link>
               </div>
@@ -380,13 +386,13 @@ export function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link to="/auth?mode=register">
+              <Link to="/auth">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="bg-[#6b0000] hover:bg-[#8b0000] text-white px-8 py-4 rounded-lg flex items-center gap-2 shadow-[0_0_20px_rgba(107,0,0,0.5),0_0_40px_rgba(107,0,0,0.3),0_0_60px_rgba(107,0,0,0.2)] hover:shadow-[0_0_30px_rgba(139,0,0,0.6),0_0_60px_rgba(139,0,0,0.4),0_0_80px_rgba(139,0,0,0.3)] transition-all"
                 >
-                  Register Now
+                  Sign In
                   <ChevronRight className="w-5 h-5" />
                 </motion.button>
               </Link>
@@ -717,17 +723,17 @@ export function LandingPage() {
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center bg-black rounded-2xl p-12"
         >
-          <h2 className="text-4xl mb-4 text-white">Ready to Join Mule Hacks?</h2>
+          <h2 className="text-4xl mb-4 text-white">Registration is closed</h2>
           <p className="text-xl text-white/90 mb-8">
-            Register now and be part of the most exciting hackathon in Missouri!
+            Already registered? Sign in to open your dashboard.
           </p>
-          <Link to="/auth?mode=register">
+          <Link to="/auth">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-[#6b0000] hover:bg-[#8b0000] text-white px-10 py-4 rounded-lg inline-flex items-center gap-2 shadow-[0_0_20px_rgba(107,0,0,0.5),0_0_40px_rgba(107,0,0,0.3),0_0_60px_rgba(107,0,0,0.2)] hover:shadow-[0_0_30px_rgba(139,0,0,0.6),0_0_60px_rgba(139,0,0,0.4),0_0_80px_rgba(139,0,0,0.3)] transition-all"
             >
-              Register Now
+              Sign In
               <ChevronRight className="w-5 h-5" />
             </motion.button>
           </Link>
