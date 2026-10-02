@@ -24,6 +24,7 @@ import {
   DollarSign,
   HelpCircle,
   Building2,
+  Wifi,
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import {
@@ -45,6 +46,7 @@ import {
 } from '@/data/schedule';
 import { DISCORD_URL, EVENT_CAMPUS, EVENT_CITY, EVENT_VENUE } from '@/data/links';
 import { SponsorCarousel } from '../components/SponsorCarousel';
+import { WifiGuide } from '../components/WifiGuide';
 import { SeoHead } from '../components/SeoHead';
 
 export function DashboardPage() {
@@ -657,6 +659,19 @@ function ResourcesView() {
 
   const resources = [
     {
+      id: 'wifi',
+      title: 'Wi-Fi',
+      icon: Wifi,
+      color: 'from-cyan-500 to-cyan-600',
+      content: (
+        <div className="space-y-6">
+          <h2 className="text-3xl text-white mb-2">Guest Wi-Fi</h2>
+          <p className="text-white/70">Follow these steps to connect to UCMO-Guest at the event.</p>
+          <WifiGuide />
+        </div>
+      ),
+    },
+    {
       id: 'sponsors',
       title: 'Sponsors',
       icon: Building2,
@@ -792,7 +807,7 @@ function ResourcesView() {
         <p className="text-white/80">Quick access to important hackathon information</p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {resources.map((resource) => (
           <motion.button
             key={resource.id}
