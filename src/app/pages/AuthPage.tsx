@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { motion } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, ArrowLeft } from 'lucide-react';
@@ -8,13 +8,16 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { SeoHead } from '../components/SeoHead';
 
 export function AuthPage() {
+  const [searchParams] = useSearchParams();
+  const lateToken = searchParams.get('late') || '';
+  const isLateRegistration = lateToken.length > 0;
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,6 +35,9 @@ export function AuthPage() {
         setSuccess(
           data.message || 'If an account exists for that email, we sent a password reset link.'
         );
+      } else if (isLateRegistration) {
+        await register(email, password, lateToken);
+        navigate('/onboarding');
       } else {
         const { isAdmin } = await login(email, password);
         navigate(isAdmin ? '/admin' : '/dashboard');
@@ -50,8 +56,18 @@ export function AuthPage() {
   return (
     <div className="min-h-screen bg-brand flex items-center justify-center px-4 py-8">
       <SeoHead
-        title={isForgotPassword ? 'Forgot password | Mule Hacks 2026' : 'Sign in | Mule Hacks 2026'}
-        description="Sign in to your Mule Hacks 2026 account. Registration is closed."
+        title={
+          isForgotPassword
+            ? 'Forgot password | Mule Hacks 2026'
+            : isLateRegistration
+              ? 'Late registration | Mule Hacks 2026'
+              : 'Sign in | Mule Hacks 2026'
+        }
+        description={
+          isLateRegistration
+            ? 'Create your Mule Hacks 2026 account and finish onboarding.'
+            : 'Sign in to your Mule Hacks 2026 account. Registration is closed.'
+        }
         noIndex
       />
       <div className="w-full max-w-md relative">
@@ -88,12 +104,18 @@ export function AuthPage() {
             </motion.div>
 
             <h2 className="text-3xl text-white mb-2">
-              {isForgotPassword ? 'Forgot password' : 'Welcome Back'}
+              {isForgotPassword
+                ? 'Forgot password'
+                : isLateRegistration
+                  ? 'Join Mule Hacks'
+                  : 'Welcome Back'}
             </h2>
             <p className="text-white/80">
               {isForgotPassword
                 ? 'Enter the email you registered with and we will send a reset link'
-                : 'Sign in to your account'}
+                : isLateRegistration
+                  ? 'Create your account to get started'
+                  : 'Sign in to your account'}
             </p>
           </div>
 
@@ -131,7 +153,7 @@ export function AuthPage() {
               </div>
             )}
 
-            {!isForgotPassword && (
+            {!isForgotPassword && !isLateRegistration && (
               <div className="text-right -mt-3">
                 <button
                   type="button"
@@ -173,12 +195,24 @@ export function AuthPage() {
               whileTap={{ scale: 0.98 }}
               className="w-full bg-[#6b0000] hover:bg-[#8b0000] text-white py-3 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(107,0,0,0.5),0_0_40px_rgba(107,0,0,0.3),0_0_60px_rgba(107,0,0,0.2)] hover:shadow-[0_0_30px_rgba(139,0,0,0.6),0_0_60px_rgba(139,0,0,0.4),0_0_80px_rgba(139,0,0,0.3)]"
             >
-              {loading ? 'Please wait...' : isForgotPassword ? 'Send reset link' : 'Sign In'}
+              {loading
+                ? 'Please wait...'
+                : isForgotPassword
+                  ? 'Send reset link'
+                  : isLateRegistration
+                    ? 'Create Account'
+                    : 'Sign In'}
             </motion.button>
           </form>
 
           <div className="mt-6 text-center space-y-3">
-            <p className="text-white/70 text-sm">Registration is closed.</p>
+            {isLateRegistration ? (
+              <Link to="/auth" className="text-white/80 hover:text-white transition-colors">
+                Already have an account? Sign in
+              </Link>
+            ) : (
+              <p className="text-white/70 text-sm">Registration is closed.</p>
+            )}
             {isForgotPassword && (
               <button
                 onClick={() => {

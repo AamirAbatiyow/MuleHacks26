@@ -33,7 +33,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, lateToken: string) => Promise<void>;
   logout: () => void;
   updateUserProfile: (profile: Partial<User>) => Promise<void>;
 }
@@ -103,11 +103,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string) => {
+  const register = async (email: string, password: string, lateToken: string) => {
     try {
       const data = await apiFetch<{ token: string; user: User }>("/api/auth/register", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, lateToken }),
       });
       setToken(data.token);
       setUser(data.user);
