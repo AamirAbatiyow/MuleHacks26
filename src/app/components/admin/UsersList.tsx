@@ -31,14 +31,135 @@ function hasDietaryRestriction(user: PublicUserRow) {
   return normalized !== "none" && normalized !== "n/a" && normalized !== "na" && normalized !== "-";
 }
 
-function dietaryLines(users: PublicUserRow[]) {
-  return users
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function buildDietaryDocument(users: PublicUserRow[]) {
+  const dietaryUsers = [...users]
     .filter(hasDietaryRestriction)
-    .map(
-      (user) =>
-        `${user.name || "Unnamed"} | ${user.email} | ${String(user.dietaryRestrictions).trim()}`
-    )
-    .join("\n");
+    .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email, undefined, { sensitivity: "base" }));
+
+  const rows = dietaryUsers
+    .map((user, index) => {
+      const name = escapeHtml(user.name || "Unnamed");
+      const email = escapeHtml(user.email);
+      const dietary = escapeHtml(String(user.dietaryRestrictions || "").trim());
+      return `<tr>
+        <td class="num">${index + 1}</td>
+        <td class="name">${name}</td>
+        <td class="email">${email}</td>
+        <td class="dietary">${dietary}</td>
+        <td class="check"></td>
+      </tr>`;
+    })
+    .join("");
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Mule Hacks 2026 Dietary Restrictions</title>
+  <style>
+    @page { margin: 0.6in; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 28px;
+      color: #111;
+      font-family: Georgia, "Times New Roman", serif;
+      background: #fff;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-end;
+      border-bottom: 2px solid #111;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    .meta {
+      margin: 0;
+      color: #444;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      text-align: right;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #222;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f0f0f0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    tr:nth-child(even) td { background: #fafafa; }
+    .num { width: 40px; text-align: center; }
+    .name { width: 22%; font-weight: 600; }
+    .email { width: 28%; word-break: break-word; }
+    .dietary { width: 34%; }
+    .check { width: 56px; }
+    .empty {
+      padding: 24px;
+      border: 1px solid #222;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    footer {
+      margin-top: 18px;
+      color: #555;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mule Hacks 2026<br />Dietary Restrictions</h1>
+    <p class="meta">
+      ${dietaryUsers.length} participant${dietaryUsers.length === 1 ? "" : "s"}<br />
+      Generated ${escapeHtml(new Date().toLocaleString())}
+    </p>
+  </header>
+  ${
+    dietaryUsers.length === 0
+      ? `<p class="empty">No dietary restrictions on file.</p>`
+      : `<table>
+          <thead>
+            <tr>
+              <th class="num">#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Restriction</th>
+              <th class="check">Done</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`
+  }
+  <footer>Use this sheet at the check-in / meal table. Mark the Done column when the participant has been served.</footer>
+</body>
+</html>`;
 }
 
 export function UsersList() {
@@ -106,41 +227,21 @@ export function UsersList() {
   };
 
   const downloadDietary = () => {
-    const lines = dietaryLines(users);
-    if (!lines) return;
-    const blob = new Blob([`${lines}\n`], { type: "text/plain" });
+    if (dietaryUsers.length === 0) return;
+    const html = buildDietaryDocument(users);
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "mulehacks-dietary-restrictions.txt";
+    link.download = "mulehacks-dietary-restrictions.html";
     link.click();
     URL.revokeObjectURL(url);
   };
 
   const printDietary = () => {
-    const rows = dietaryUsers
-      .map(
-        (user) =>
-          `<tr><td>${escapeHtml(user.name || "Unnamed")}</td><td>${escapeHtml(
-            user.email
-          )}</td><td>${escapeHtml(String(user.dietaryRestrictions || "").trim())}</td></tr>`
-      )
-      .join("");
-    const html = `<!doctype html><html><head><title>Dietary restrictions</title>
-      <style>
-        body { font-family: sans-serif; padding: 24px; color: #111; }
-        h1 { font-size: 20px; margin-bottom: 8px; }
-        p { margin-bottom: 16px; color: #444; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
-        th { background: #f3f3f3; }
-      </style></head><body>
-      <h1>Mule Hacks 2026 — Dietary restrictions</h1>
-      <p>${dietaryUsers.length} participant${dietaryUsers.length === 1 ? "" : "s"} with restrictions</p>
-      <table><thead><tr><th>Name</th><th>Email</th><th>Dietary restriction</th></tr></thead>
-      <tbody>${rows || "<tr><td colspan='3'>None</td></tr>"}</tbody></table>
-      </body></html>`;
-    const popup = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+    if (dietaryUsers.length === 0) return;
+    const html = buildDietaryDocument(users);
+    const popup = window.open("", "_blank", "noopener,noreferrer,width=960,height=720");
     if (!popup) return;
     popup.document.write(html);
     popup.document.close();
@@ -416,13 +517,4 @@ export function UsersList() {
       )}
     </div>
   );
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
