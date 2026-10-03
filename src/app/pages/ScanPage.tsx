@@ -18,6 +18,13 @@ const SCANNER_ELEMENT_ID = "mh-qr-reader";
 
 type Step = "name" | "scan" | "success" | "logged";
 
+function hasDietaryRestriction(value?: string | null) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return false;
+  const normalized = trimmed.toLowerCase();
+  return normalized !== "none" && normalized !== "n/a" && normalized !== "na" && normalized !== "-";
+}
+
 export function ScanPage() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
@@ -278,6 +285,15 @@ export function ScanPage() {
 
         {step === "success" && participant && (
           <div className="space-y-4">
+            {hasDietaryRestriction(participant.dietaryRestrictions) && (
+              <div className="bg-amber-400 text-black rounded-2xl p-5 border-4 border-amber-200 shadow-[0_0_30px_rgba(251,191,36,0.45)]">
+                <p className="text-xs font-bold uppercase tracking-wider mb-1">Dietary flag</p>
+                <p className="text-2xl font-bold leading-tight">Send them to Aamir</p>
+                <p className="mt-2 text-sm font-medium">
+                  Restriction: {participant.dietaryRestrictions.trim()}
+                </p>
+              </div>
+            )}
             <div className="bg-emerald-950/50 border border-emerald-400/40 rounded-2xl p-6 space-y-3">
               <p className="text-emerald-300 text-sm uppercase tracking-wider">Valid participant</p>
               <h2 className="text-2xl text-white">{participant.name || "Unnamed participant"}</h2>
@@ -291,12 +307,6 @@ export function ScanPage() {
               {participant.shirtSize && (
                 <p className="text-white/70 text-sm">Shirt: {participant.shirtSize}</p>
               )}
-              {participant.dietaryRestrictions?.trim() &&
-                participant.dietaryRestrictions.trim().toLowerCase() !== "none" && (
-                  <p className="text-amber-200 text-sm">
-                    Dietary: {participant.dietaryRestrictions}
-                  </p>
-                )}
             </div>
 
             <div className="bg-black/30 border border-white/20 rounded-2xl p-4 space-y-3">
