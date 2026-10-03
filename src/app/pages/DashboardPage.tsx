@@ -39,14 +39,14 @@ import {
 } from '@/lib/hackathonStorage';
 import type { User } from '../context/AuthContext';
 import {
-  scheduleStart,
-  scheduleEnd,
-  SCHEDULE_REVEAL_MESSAGE,
-  SCHEDULE_EVENTS_BLURB,
-} from '@/data/schedule';
-import { DISCORD_URL, EVENT_CAMPUS, EVENT_CITY, EVENT_VENUE } from '@/data/links';
+  DISCORD_URL,
+  EVENT_CAMPUS,
+  EVENT_CITY,
+  EVENT_VENUE,
+} from '@/data/links';
 import { SponsorCarousel } from '../components/SponsorCarousel';
 import { WifiGuide } from '../components/WifiGuide';
+import { ScheduleAgenda } from '../components/ScheduleAgenda';
 import { SeoHead } from '../components/SeoHead';
 
 export function DashboardPage() {
@@ -691,33 +691,10 @@ function ResourcesView() {
       content: (
         <div className="space-y-6">
           <h2 className="text-3xl text-white mb-2">Event Schedule</h2>
-          <p className="text-white/70">{SCHEDULE_REVEAL_MESSAGE}</p>
-          <p className="text-white/70">{SCHEDULE_EVENTS_BLURB}</p>
           <p className="text-white/70">
             {EVENT_VENUE}, {EVENT_CAMPUS}, {EVENT_CITY}
           </p>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-              <p className="text-white/50 text-xs uppercase tracking-wider mb-2">Arrive</p>
-              <h3 className="text-xl text-white mb-4">
-                {scheduleStart.day} — {scheduleStart.date}
-              </h3>
-              <div className="flex justify-between text-sm py-2">
-                <span className="text-gray-400 whitespace-nowrap">{scheduleStart.time}</span>
-                <span className="text-white">{scheduleStart.event}</span>
-              </div>
-            </div>
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-              <p className="text-white/50 text-xs uppercase tracking-wider mb-2">Ends</p>
-              <h3 className="text-xl text-white mb-4">
-                {scheduleEnd.day} — {scheduleEnd.date}
-              </h3>
-              <div className="flex justify-between text-sm py-2">
-                <span className="text-gray-400 whitespace-nowrap">{scheduleEnd.time}</span>
-                <span className="text-white">{scheduleEnd.event}</span>
-              </div>
-            </div>
-          </div>
+          <ScheduleAgenda />
         </div>
       ),
     },
