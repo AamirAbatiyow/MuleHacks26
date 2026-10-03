@@ -45,3 +45,10 @@ export function requireAdmin(req, res, next) {
   }
   return next();
 }
+
+export function requireScanner(req, res, next) {
+  if (!req.user?.isScanner) {
+    return res.status(403).json({ ok: false, error: "Scanner access required." });
+  }
+  return next();
+}

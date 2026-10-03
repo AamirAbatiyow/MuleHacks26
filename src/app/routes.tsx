@@ -8,7 +8,9 @@ import { OnboardingPage } from "./pages/OnboardingPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
+import { ScannerRoute } from "./components/ScannerRoute";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
+import { ScanPage } from "./pages/ScanPage";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +51,14 @@ export const router = createBrowserRouter([
       <AdminRoute>
         <AdminDashboard />
       </AdminRoute>
+    ),
+  },
+  {
+    path: "/scan",
+    element: (
+      <ScannerRoute>
+        <ScanPage />
+      </ScannerRoute>
     ),
   },
   {

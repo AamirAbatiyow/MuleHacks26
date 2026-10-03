@@ -38,6 +38,47 @@ export type PublicUserRow = {
   rulesAcknowledged?: boolean;
   studentLevel?: "high_school" | "undergraduate" | "graduate" | null;
   teamPreference?: "have_team" | "solo" | "make_team" | null;
+  checkedIn?: boolean;
+  checkInCount?: number;
+};
+
+export type CheckInStation =
+  | "arrival"
+  | "dinner"
+  | "midnight_snack"
+  | "breakfast"
+  | "lunch"
+  | "workshop"
+  | "reentry";
+
+export const CHECK_IN_STATIONS: { id: CheckInStation; label: string }[] = [
+  { id: "arrival", label: "Arrival" },
+  { id: "dinner", label: "Dinner" },
+  { id: "midnight_snack", label: "Midnight Snack" },
+  { id: "breakfast", label: "Breakfast" },
+  { id: "lunch", label: "Lunch" },
+  { id: "workshop", label: "Workshop" },
+  { id: "reentry", label: "Building re-entry (night)" },
+];
+
+export type CheckInParticipant = {
+  email: string;
+  name: string;
+  university: string;
+  dietaryRestrictions: string;
+  shirtSize: string;
+  teamName: string;
+  hasCompletedOnboarding: boolean;
+};
+
+export type StoredCheckIn = {
+  id: string;
+  participantEmail: string;
+  participantName: string;
+  station: CheckInStation;
+  organizerName: string;
+  scannedByEmail: string;
+  createdAt: string;
 };
 
 export async function getAnnouncements(): Promise<StoredAnnouncement[]> {
@@ -106,6 +147,38 @@ export async function getRegisteredUsersForAdmin(): Promise<PublicUserRow[]> {
 
 export async function dropRegisteredUser(email: string): Promise<void> {
   await apiFetch(`/api/users/${encodeURIComponent(email)}`, { method: "DELETE" });
+}
+
+export async function lookupParticipantForScan(query: string): Promise<CheckInParticipant> {
+  const data = await apiFetch<{ participant: CheckInParticipant }>(
+    `/api/checkins/lookup?q=${encodeURIComponent(query)}`
+  );
+  return data.participant;
+}
+
+export async function logCheckIn(input: {
+  email: string;
+  station: CheckInStation;
+  organizerName: string;
+}): Promise<{ event: StoredCheckIn; recentDuplicate: boolean }> {
+  const data = await apiFetch<{
+    event: StoredCheckIn;
+    recentDuplicate?: boolean;
+  }>("/api/checkins", {
+    method: "POST",
+    body: JSON.stringify({
+      email: input.email,
+      station: input.station,
+      organizerName: input.organizerName,
+    }),
+  });
+  return { event: data.event, recentDuplicate: Boolean(data.recentDuplicate) };
+}
+
+export async function getCheckInEvents(email?: string): Promise<StoredCheckIn[]> {
+  const query = email ? `?email=${encodeURIComponent(email)}` : "";
+  const data = await apiFetch<{ events: StoredCheckIn[] }>(`/api/checkins${query}`);
+  return data.events ?? [];
 }
 
 export function formatAnnouncementTime(iso: string): string {

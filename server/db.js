@@ -38,6 +38,45 @@ export async function ensureAdminUser() {
     name: "Admin",
     hasCompletedOnboarding: true,
     isAdmin: true,
+    isScanner: false,
   });
   console.log(`Seeded admin user: ${email}`);
+}
+
+export async function ensureScannerUser() {
+  const email = String(process.env.SCANNER_EMAIL || "")
+    .trim()
+    .toLowerCase();
+  const password = process.env.SCANNER_PASSWORD || "";
+
+  if (!email || !password) {
+    console.warn("SCANNER_EMAIL or SCANNER_PASSWORD not set; skipping scanner seed.");
+    return;
+  }
+
+  const existing = await User.findOne({ email });
+  if (existing) {
+    let dirty = false;
+    if (!existing.isScanner) {
+      existing.isScanner = true;
+      dirty = true;
+    }
+    if (existing.isAdmin) {
+      existing.isAdmin = false;
+      dirty = true;
+    }
+    if (dirty) await existing.save();
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await User.create({
+    email,
+    passwordHash,
+    name: "Scanner",
+    hasCompletedOnboarding: true,
+    isAdmin: false,
+    isScanner: true,
+  });
+  console.log(`Seeded scanner user: ${email}`);
 }

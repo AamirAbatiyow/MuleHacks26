@@ -1,18 +1,38 @@
 import { Router } from "express";
 import { User, toPublicUser } from "../models/User.js";
 import { Team } from "../models/Team.js";
+import { CheckInEvent } from "../models/CheckInEvent.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
 router.get("/", requireAuth, requireAdmin, async (_req, res) => {
   try {
-    const users = await User.find({ isAdmin: { $ne: true } })
+    const users = await User.find({ isAdmin: { $ne: true }, isScanner: { $ne: true } })
       .sort({ createdAt: -1 })
       .lean();
+
+    const arrivalEmails = await CheckInEvent.distinct("participantEmail", {
+      station: "arrival",
+    });
+    const arrived = new Set(arrivalEmails.map((email) => String(email).toLowerCase()));
+    const counts = await CheckInEvent.aggregate([
+      { $group: { _id: "$participantEmail", count: { $sum: 1 } } },
+    ]);
+    const countByEmail = new Map(
+      counts.map((row) => [String(row._id).toLowerCase(), row.count])
+    );
+
     return res.json({
       ok: true,
-      users: users.map((u) => toPublicUser(u)),
+      users: users.map((u) => {
+        const email = String(u.email).toLowerCase();
+        return {
+          ...toPublicUser(u),
+          checkedIn: arrived.has(email),
+          checkInCount: countByEmail.get(email) || 0,
+        };
+      }),
     });
   } catch (error) {
     console.error("List users failed:", error);
@@ -30,7 +50,7 @@ router.delete("/:email", requireAuth, requireAdmin, async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user || user.isAdmin) {
+    if (!user || user.isAdmin || user.isScanner) {
       return res.status(404).json({ ok: false, error: "Participant not found." });
     }
 

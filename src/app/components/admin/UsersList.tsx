@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   dropRegisteredUser,
   getRegisteredUsersForAdmin,
   type PublicUserRow,
 } from "@/lib/hackathonStorage";
 import { STUDENT_LEVELS, TEAM_PREFERENCES } from "../RegistrationQuestions";
+
+type CheckInFilter = "all" | "checked_in" | "not_checked_in";
 
 function toProfileUrl(value: string | undefined, baseUrl: string) {
   const trimmed = value?.trim();
@@ -22,11 +24,29 @@ function participantEmails(users: PublicUserRow[]) {
   return users.map((user) => user.email).filter(Boolean).join("\n");
 }
 
+function hasDietaryRestriction(user: PublicUserRow) {
+  const value = String(user.dietaryRestrictions || "").trim();
+  if (!value) return false;
+  const normalized = value.toLowerCase();
+  return normalized !== "none" && normalized !== "n/a" && normalized !== "na" && normalized !== "-";
+}
+
+function dietaryLines(users: PublicUserRow[]) {
+  return users
+    .filter(hasDietaryRestriction)
+    .map(
+      (user) =>
+        `${user.name || "Unnamed"} | ${user.email} | ${String(user.dietaryRestrictions).trim()}`
+    )
+    .join("\n");
+}
+
 export function UsersList() {
   const [users, setUsers] = useState<PublicUserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copyStatus, setCopyStatus] = useState("");
+  const [checkInFilter, setCheckInFilter] = useState<CheckInFilter>("all");
   const [dropTarget, setDropTarget] = useState<PublicUserRow | null>(null);
   const [dropStep, setDropStep] = useState<1 | 2>(1);
   const [typedEmail, setTypedEmail] = useState("");
@@ -57,14 +77,21 @@ export function UsersList() {
     };
   }, []);
 
-  const emails = participantEmails(users);
+  const filteredUsers = useMemo(() => {
+    if (checkInFilter === "checked_in") return users.filter((user) => user.checkedIn);
+    if (checkInFilter === "not_checked_in") return users.filter((user) => !user.checkedIn);
+    return users;
+  }, [users, checkInFilter]);
+
+  const dietaryUsers = useMemo(() => users.filter(hasDietaryRestriction), [users]);
+  const emails = participantEmails(filteredUsers);
   const emailMatches =
     dropTarget !== null && typedEmail.trim().toLowerCase() === dropTarget.email.toLowerCase();
 
   const copyEmails = async () => {
     if (!emails) return;
     await navigator.clipboard.writeText(emails);
-    setCopyStatus(`Copied ${users.length} email${users.length === 1 ? "" : "s"}.`);
+    setCopyStatus(`Copied ${filteredUsers.length} email${filteredUsers.length === 1 ? "" : "s"}.`);
   };
 
   const downloadEmails = () => {
@@ -76,6 +103,49 @@ export function UsersList() {
     link.download = "mulehacks-participant-emails.txt";
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const downloadDietary = () => {
+    const lines = dietaryLines(users);
+    if (!lines) return;
+    const blob = new Blob([`${lines}\n`], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "mulehacks-dietary-restrictions.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const printDietary = () => {
+    const rows = dietaryUsers
+      .map(
+        (user) =>
+          `<tr><td>${escapeHtml(user.name || "Unnamed")}</td><td>${escapeHtml(
+            user.email
+          )}</td><td>${escapeHtml(String(user.dietaryRestrictions || "").trim())}</td></tr>`
+      )
+      .join("");
+    const html = `<!doctype html><html><head><title>Dietary restrictions</title>
+      <style>
+        body { font-family: sans-serif; padding: 24px; color: #111; }
+        h1 { font-size: 20px; margin-bottom: 8px; }
+        p { margin-bottom: 16px; color: #444; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+        th { background: #f3f3f3; }
+      </style></head><body>
+      <h1>Mule Hacks 2026 — Dietary restrictions</h1>
+      <p>${dietaryUsers.length} participant${dietaryUsers.length === 1 ? "" : "s"} with restrictions</p>
+      <table><thead><tr><th>Name</th><th>Email</th><th>Dietary restriction</th></tr></thead>
+      <tbody>${rows || "<tr><td colspan='3'>None</td></tr>"}</tbody></table>
+      </body></html>`;
+    const popup = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
+    if (!popup) return;
+    popup.document.write(html);
+    popup.document.close();
+    popup.focus();
+    popup.print();
   };
 
   const closeDrop = () => {
@@ -113,7 +183,7 @@ export function UsersList() {
           <button
             type="button"
             onClick={() => void copyEmails()}
-            disabled={users.length === 0}
+            disabled={filteredUsers.length === 0}
             className="bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50"
           >
             Copy emails
@@ -121,13 +191,57 @@ export function UsersList() {
           <button
             type="button"
             onClick={downloadEmails}
-            disabled={users.length === 0}
+            disabled={filteredUsers.length === 0}
             className="bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50"
           >
             Download emails
           </button>
+          <button
+            type="button"
+            onClick={printDietary}
+            disabled={dietaryUsers.length === 0}
+            className="bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Print dietary list
+          </button>
+          <button
+            type="button"
+            onClick={downloadDietary}
+            disabled={dietaryUsers.length === 0}
+            className="bg-white/10 hover:bg-white/20 text-white text-sm px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Download dietary list
+          </button>
         </div>
       </div>
+
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["all", "All"],
+            ["checked_in", "Checked in"],
+            ["not_checked_in", "Not checked in"],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setCheckInFilter(value)}
+            className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+              checkInFilter === value
+                ? "bg-[#6b0000]/80 border-[#6b0000] text-white"
+                : "bg-black/20 border-white/20 text-white/70 hover:text-white"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+        <p className="text-white/60 text-sm self-center">
+          Showing {filteredUsers.length} of {users.length}
+          {dietaryUsers.length > 0 ? ` · ${dietaryUsers.length} with dietary notes` : ""}
+        </p>
+      </div>
+
       {copyStatus && <p className="text-white/70 text-sm">{copyStatus}</p>}
       {loading ? (
         <p className="text-white/60 text-sm">Loading…</p>
@@ -140,6 +254,7 @@ export function UsersList() {
               <tr className="border-b border-white/10 text-white/60">
                 <th className="p-3 font-medium">Email</th>
                 <th className="p-3 font-medium">Name</th>
+                <th className="p-3 font-medium">Checked in</th>
                 <th className="p-3 font-medium">University</th>
                 <th className="p-3 font-medium">T-shirt</th>
                 <th className="p-3 font-medium">Dietary</th>
@@ -154,14 +269,14 @@ export function UsersList() {
               </tr>
             </thead>
             <tbody>
-              {users.length === 0 ? (
+              {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={13} className="p-6 text-white/50 text-center">
+                  <td colSpan={14} className="p-6 text-white/50 text-center">
                     No registered users yet.
                   </td>
                 </tr>
               ) : (
-                users.map((u) => {
+                filteredUsers.map((u) => {
                   const githubUrl = toProfileUrl(u.github, "https://github.com/");
                   const linkedinUrl = toProfileUrl(u.linkedin, "https://linkedin.com/in/");
 
@@ -169,6 +284,7 @@ export function UsersList() {
                     <tr key={u.email} className="border-b border-white/5 text-white/90">
                       <td className="p-3">{u.email}</td>
                       <td className="p-3">{u.name || "—"}</td>
+                      <td className="p-3">{u.checkedIn ? "Checked in" : "Not checked in"}</td>
                       <td className="p-3">{u.university || "—"}</td>
                       <td className="p-3">{u.shirtSize || "—"}</td>
                       <td className="p-3">{u.dietaryRestrictions || "—"}</td>
@@ -300,4 +416,13 @@ export function UsersList() {
       )}
     </div>
   );
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

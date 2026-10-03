@@ -2,7 +2,7 @@ import { Navigate } from "react-router";
 import { ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 
-export function AdminRoute({ children }: { children: ReactNode }) {
+export function ScannerRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -17,8 +17,8 @@ export function AdminRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!user.isAdmin) {
-    return <Navigate to={user.isScanner ? "/scan" : "/dashboard"} replace />;
+  if (!user.isScanner) {
+    return <Navigate to={user.isAdmin ? "/admin" : "/dashboard"} replace />;
   }
 
   return <>{children}</>;

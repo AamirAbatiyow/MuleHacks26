@@ -27,12 +27,16 @@ export interface User {
   teamPreference?: "have_team" | "solo" | "make_team" | null;
   referredBy?: string | null;
   isAdmin?: boolean;
+  isScanner?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ isAdmin: boolean; isScanner: boolean }>;
   register: (email: string, password: string, lateToken: string) => Promise<void>;
   logout: () => void;
   updateUserProfile: (profile: Partial<User>) => Promise<void>;
@@ -94,7 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setToken(data.token);
       setUser(data.user);
-      return { isAdmin: Boolean(data.user.isAdmin) };
+      return {
+        isAdmin: Boolean(data.user.isAdmin),
+        isScanner: Boolean(data.user.isScanner),
+      };
     } catch (error) {
       if (error instanceof ApiError) {
         throw new Error(error.message);

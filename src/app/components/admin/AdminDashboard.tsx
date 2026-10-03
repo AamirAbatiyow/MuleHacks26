@@ -7,11 +7,13 @@ import {
   UsersRound,
   LogOut,
   ArrowLeft,
+  QrCode,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { AnnouncementManager } from "./AnnouncementManager";
 import { UsersList } from "./UsersList";
 import { TeamsList } from "./TeamsList";
+import { CheckInsLog } from "./CheckInsLog";
 import { SeoHead } from "../SeoHead";
 import {
   getRegisteredUsersForAdmin,
@@ -20,13 +22,14 @@ import {
   type PublicUserRow,
 } from "@/lib/hackathonStorage";
 
-type AdminTab = "dashboard" | "announcements" | "users" | "teams";
+type AdminTab = "dashboard" | "announcements" | "users" | "teams" | "checkins";
 
 const nav: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "announcements", label: "Announcements", icon: Megaphone },
   { id: "users", label: "Users", icon: Users },
   { id: "teams", label: "Teams", icon: UsersRound },
+  { id: "checkins", label: "Check-ins", icon: QrCode },
 ];
 
 function countBy(users: PublicUserRow[], pick: (user: PublicUserRow) => boolean) {
@@ -154,6 +157,8 @@ export function AdminDashboard() {
                     ["Going solo", countBy(stats.users, (person) => person.teamPreference === "solo")],
                     ["Want to make a team", countBy(stats.users, (person) => person.teamPreference === "make_team")],
                     ["Teams created", stats.teamCount],
+                    ["Checked in (arrival)", countBy(stats.users, (person) => Boolean(person.checkedIn))],
+                    ["Not checked in", countBy(stats.users, (person) => !person.checkedIn)],
                     [
                       "Top referrer",
                       stats.topReferrer
@@ -190,11 +195,20 @@ export function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setTab("teams")}
-                  className="text-left bg-black/30 border border-white/20 rounded-xl p-5 hover:border-[#6b0000]/60 transition-colors sm:col-span-2"
+                  className="text-left bg-black/30 border border-white/20 rounded-xl p-5 hover:border-[#6b0000]/60 transition-colors"
                 >
                   <UsersRound className="w-8 h-8 text-white mb-2" />
                   <h2 className="text-white font-medium">Teams</h2>
                   <p className="text-white/60 text-sm mt-1">View team roster and codes.</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab("checkins")}
+                  className="text-left bg-black/30 border border-white/20 rounded-xl p-5 hover:border-[#6b0000]/60 transition-colors"
+                >
+                  <QrCode className="w-8 h-8 text-white mb-2" />
+                  <h2 className="text-white font-medium">Check-ins</h2>
+                  <p className="text-white/60 text-sm mt-1">Live log of station scans.</p>
                 </button>
               </div>
             </div>
@@ -202,6 +216,7 @@ export function AdminDashboard() {
           {tab === "announcements" && <AnnouncementManager />}
           {tab === "users" && <UsersList />}
           {tab === "teams" && <TeamsList />}
+          {tab === "checkins" && <CheckInsLog />}
         </main>
       </div>
     </div>
