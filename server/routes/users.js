@@ -8,7 +8,11 @@ const router = Router();
 
 router.get("/", requireAuth, requireAdmin, async (_req, res) => {
   try {
-    const users = await User.find({ isAdmin: { $ne: true }, isScanner: { $ne: true } })
+    const users = await User.find({
+      isAdmin: { $ne: true },
+      isScanner: { $ne: true },
+      isJudge: { $ne: true },
+    })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -50,7 +54,7 @@ router.delete("/:email", requireAuth, requireAdmin, async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user || user.isAdmin || user.isScanner) {
+    if (!user || user.isAdmin || user.isScanner || user.isJudge) {
       return res.status(404).json({ ok: false, error: "Participant not found." });
     }
 

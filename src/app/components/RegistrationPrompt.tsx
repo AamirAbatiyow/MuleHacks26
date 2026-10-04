@@ -11,6 +11,7 @@ export function needsRegistrationAnswers(user: User) {
   return (
     !user.isAdmin &&
     !user.isScanner &&
+    !user.isJudge &&
     (!user.rulesAcknowledged || !user.studentLevel || !user.teamPreference)
   );
 }

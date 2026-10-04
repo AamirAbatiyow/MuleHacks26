@@ -23,6 +23,10 @@ export function ProtectedRoute({ children, requiresOnboarding = false }: Protect
     return <Navigate to="/auth" replace />;
   }
 
+  if (user.isJudge) {
+    return <Navigate to="/judge" replace />;
+  }
+
   if (user.isScanner) {
     return <Navigate to="/scan" replace />;
   }

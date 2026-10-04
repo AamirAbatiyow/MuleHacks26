@@ -8,12 +8,14 @@ import {
   LogOut,
   ArrowLeft,
   QrCode,
+  ClipboardCheck,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { AnnouncementManager } from "./AnnouncementManager";
 import { UsersList } from "./UsersList";
 import { TeamsList } from "./TeamsList";
 import { CheckInsLog } from "./CheckInsLog";
+import { JudgingResults } from "./JudgingResults";
 import { SeoHead } from "../SeoHead";
 import {
   getRegisteredUsersForAdmin,
@@ -22,7 +24,7 @@ import {
   type PublicUserRow,
 } from "@/lib/hackathonStorage";
 
-type AdminTab = "dashboard" | "announcements" | "users" | "teams" | "checkins";
+type AdminTab = "dashboard" | "announcements" | "users" | "teams" | "checkins" | "judging";
 
 const nav: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -30,6 +32,7 @@ const nav: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "users", label: "Users", icon: Users },
   { id: "teams", label: "Teams", icon: UsersRound },
   { id: "checkins", label: "Check-ins", icon: QrCode },
+  { id: "judging", label: "Judging", icon: ClipboardCheck },
 ];
 
 function countBy(users: PublicUserRow[], pick: (user: PublicUserRow) => boolean) {
@@ -210,6 +213,15 @@ export function AdminDashboard() {
                   <h2 className="text-white font-medium">Check-ins</h2>
                   <p className="text-white/60 text-sm mt-1">Live log of station scans.</p>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setTab("judging")}
+                  className="text-left bg-black/30 border border-white/20 rounded-xl p-5 hover:border-[#6b0000]/60 transition-colors"
+                >
+                  <ClipboardCheck className="w-8 h-8 text-white mb-2" />
+                  <h2 className="text-white font-medium">Judging</h2>
+                  <p className="text-white/60 text-sm mt-1">Averages and each judge sheet.</p>
+                </button>
               </div>
             </div>
           )}
@@ -217,6 +229,7 @@ export function AdminDashboard() {
           {tab === "users" && <UsersList />}
           {tab === "teams" && <TeamsList />}
           {tab === "checkins" && <CheckInsLog />}
+          {tab === "judging" && <JudgingResults />}
         </main>
       </div>
     </div>

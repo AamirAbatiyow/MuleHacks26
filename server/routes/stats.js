@@ -9,6 +9,7 @@ router.get("/top-referrer", requireAuth, requireAdmin, async (_req, res) => {
     const users = await User.find({
       isAdmin: { $ne: true },
       isScanner: { $ne: true },
+      isJudge: { $ne: true },
       referredBy: { $exists: true, $nin: [null, ""] },
     })
       .select("referredBy")

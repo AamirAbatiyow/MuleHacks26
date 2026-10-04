@@ -18,6 +18,7 @@ export function ScannerRoute({ children }: { children: ReactNode }) {
   }
 
   if (!user.isScanner) {
+    if (user.isJudge) return <Navigate to="/judge" replace />;
     return <Navigate to={user.isAdmin ? "/admin" : "/dashboard"} replace />;
   }
 

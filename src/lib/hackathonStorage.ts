@@ -137,6 +137,14 @@ export async function leaveTeam(teamId: string): Promise<void> {
   });
 }
 
+export async function removeTeammate(teamId: string, email: string): Promise<StoredTeam> {
+  const data = await apiFetch<{ team: StoredTeam }>(`/api/teams/${teamId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ removeEmail: email }),
+  });
+  return data.team;
+}
+
 export async function submitTeamForJudging(teamId: string, project: string): Promise<StoredTeam> {
   const data = await apiFetch<{ team: StoredTeam }>(`/api/teams/${teamId}/submit`, {
     method: "POST",
@@ -204,4 +212,60 @@ export function formatAnnouncementTime(iso: string): string {
   if (hrs < 24) return `${hrs} hour${hrs === 1 ? "" : "s"} ago`;
   const days = Math.floor(hrs / 24);
   return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+export type JudgeSheet = {
+  id: string;
+  teamId: string;
+  teamName: string;
+  projectName: string;
+  judgeName: string;
+  format: "devpost" | "live_demo";
+  scores: Record<string, number>;
+  notes: string;
+  total: number;
+  updatedAt: string;
+};
+
+export type JudgeTeamRow = {
+  id: string;
+  name: string;
+  project: string;
+  devpost: JudgeSheet | null;
+  liveDemo: JudgeSheet | null;
+};
+
+export type JudgeResultTeam = {
+  id: string;
+  name: string;
+  project: string;
+  averageTotal: number | null;
+  categoryAverages: Record<string, number | null>;
+  scores: JudgeSheet[];
+};
+
+export async function getJudgeTeams(judgeName: string) {
+  const data = await apiFetch<{ teams: JudgeTeamRow[] }>(
+    `/api/judging/teams?judgeName=${encodeURIComponent(judgeName)}`
+  );
+  return data.teams;
+}
+
+export async function saveJudgeScore(input: {
+  teamId: string;
+  judgeName: string;
+  format: "devpost" | "live_demo";
+  scores: Record<string, number>;
+  notes: string;
+}) {
+  const data = await apiFetch<{ score: JudgeSheet }>("/api/judging/scores", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.score;
+}
+
+export async function getJudgeResults() {
+  const data = await apiFetch<{ teams: JudgeResultTeam[] }>("/api/judging/results");
+  return data.teams;
 }

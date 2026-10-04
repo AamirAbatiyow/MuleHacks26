@@ -182,8 +182,8 @@ router.patch("/:id", requireAuth, async (req, res) => {
       return res.status(404).json({ ok: false, error: "Team not found." });
     }
 
-    const email = req.user.email;
-    const isMember = team.memberEmails.includes(email);
+    const email = normalizeEmail(req.user.email);
+    const isMember = team.memberEmails.map(normalizeEmail).includes(email);
     if (!isMember && !req.user.isAdmin) {
       return res.status(403).json({ ok: false, error: "Not a member of this team." });
     }
@@ -202,8 +202,24 @@ router.patch("/:id", requireAuth, async (req, res) => {
       if (team.submittedForJudging) clearSubmission(team);
     }
 
+    if (req.body?.removeEmail !== undefined) {
+      if (!isMember) {
+        return res.status(403).json({ ok: false, error: "Only team members can remove a teammate." });
+      }
+      const removeEmail = normalizeEmail(req.body.removeEmail);
+      if (!removeEmail || removeEmail === email) {
+        return res.status(400).json({ ok: false, error: "Use leave to remove yourself from the team." });
+      }
+      const onTeam = team.memberEmails.map(normalizeEmail).includes(removeEmail);
+      if (!onTeam) {
+        return res.status(404).json({ ok: false, error: "That person is not on this team." });
+      }
+      team.memberEmails = team.memberEmails.filter((member) => normalizeEmail(member) !== removeEmail);
+      if (team.submittedForJudging) clearSubmission(team);
+    }
+
     if (req.body?.leave === true) {
-      team.memberEmails = team.memberEmails.filter((e) => e !== email);
+      team.memberEmails = team.memberEmails.filter((member) => normalizeEmail(member) !== email);
       if (team.submittedForJudging) clearSubmission(team);
       if (team.memberEmails.length === 0) {
         await team.deleteOne();

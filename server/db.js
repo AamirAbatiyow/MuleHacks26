@@ -80,3 +80,36 @@ export async function ensureScannerUser() {
   });
   console.log(`Seeded scanner user: ${email}`);
 }
+
+export async function ensureJudgeUser() {
+  const email = String(process.env.JUDGE_EMAIL || "")
+    .trim()
+    .toLowerCase();
+  const password = process.env.JUDGE_PASSWORD || "";
+
+  if (!email || !password) {
+    console.warn("JUDGE_EMAIL or JUDGE_PASSWORD not set; skipping judge seed.");
+    return;
+  }
+
+  const existing = await User.findOne({ email });
+  if (existing) {
+    existing.isJudge = true;
+    existing.isAdmin = false;
+    existing.isScanner = false;
+    await existing.save();
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await User.create({
+    email,
+    passwordHash,
+    name: "Judge",
+    hasCompletedOnboarding: true,
+    isAdmin: false,
+    isScanner: false,
+    isJudge: true,
+  });
+  console.log(`Seeded judge user: ${email}`);
+}

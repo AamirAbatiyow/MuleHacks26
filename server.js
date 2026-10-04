@@ -4,13 +4,14 @@ import fs from "fs";
 import path from "path";
 import { Resend } from "resend";
 import { fileURLToPath } from "url";
-import { connectDb, ensureAdminUser, ensureScannerUser } from "./server/db.js";
+import { connectDb, ensureAdminUser, ensureScannerUser, ensureJudgeUser } from "./server/db.js";
 import authRoutes from "./server/routes/auth.js";
 import usersRoutes from "./server/routes/users.js";
 import announcementsRoutes from "./server/routes/announcements.js";
 import teamsRoutes from "./server/routes/teams.js";
 import statsRoutes from "./server/routes/stats.js";
 import checkinsRoutes from "./server/routes/checkins.js";
+import judgingRoutes from "./server/routes/judging.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distPath = path.join(__dirname, "dist");
@@ -161,6 +162,7 @@ app.use("/api/announcements", announcementsRoutes);
 app.use("/api/teams", teamsRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/checkins", checkinsRoutes);
+app.use("/api/judging", judgingRoutes);
 
 const distExists = fs.existsSync(distPath);
 if (distExists) {
@@ -184,6 +186,7 @@ async function start() {
   await connectDb(process.env.MONGODB_URI);
   await ensureAdminUser();
   await ensureScannerUser();
+  await ensureJudgeUser();
 
   app.listen(port, () => {
     console.log(`Server listening on http://localhost:${port}`);

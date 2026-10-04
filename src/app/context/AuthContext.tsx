@@ -28,6 +28,7 @@ export interface User {
   referredBy?: string | null;
   isAdmin?: boolean;
   isScanner?: boolean;
+  isJudge?: boolean;
 }
 
 interface AuthContextType {
@@ -36,7 +37,7 @@ interface AuthContextType {
   login: (
     email: string,
     password: string
-  ) => Promise<{ isAdmin: boolean; isScanner: boolean }>;
+  ) => Promise<{ isAdmin: boolean; isScanner: boolean; isJudge: boolean }>;
   register: (email: string, password: string, lateToken: string) => Promise<void>;
   logout: () => void;
   updateUserProfile: (profile: Partial<User>) => Promise<void>;
@@ -101,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return {
         isAdmin: Boolean(data.user.isAdmin),
         isScanner: Boolean(data.user.isScanner),
+        isJudge: Boolean(data.user.isJudge),
       };
     } catch (error) {
       if (error instanceof ApiError) {

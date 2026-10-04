@@ -52,3 +52,10 @@ export function requireScanner(req, res, next) {
   }
   return next();
 }
+
+export function requireJudge(req, res, next) {
+  if (!req.user?.isJudge) {
+    return res.status(403).json({ ok: false, error: "Judge access required." });
+  }
+  return next();
+}

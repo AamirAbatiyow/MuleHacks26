@@ -9,8 +9,10 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { ScannerRoute } from "./components/ScannerRoute";
+import { JudgeRoute } from "./components/JudgeRoute";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { ScanPage } from "./pages/ScanPage";
+import { JudgePage } from "./pages/JudgePage";
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +61,14 @@ export const router = createBrowserRouter([
       <ScannerRoute>
         <ScanPage />
       </ScannerRoute>
+    ),
+  },
+  {
+    path: "/judge",
+    element: (
+      <JudgeRoute>
+        <JudgePage />
+      </JudgeRoute>
     ),
   },
   {

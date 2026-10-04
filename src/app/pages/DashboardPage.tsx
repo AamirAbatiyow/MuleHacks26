@@ -34,6 +34,7 @@ import {
   createTeam,
   joinTeam,
   leaveTeam,
+  removeTeammate,
   submitTeamForJudging,
   type StoredAnnouncement,
   type StoredTeam,
@@ -473,6 +474,25 @@ function TeamView({ user }: { user: User | null }) {
     }
   };
 
+  const handleRemoveTeammate = async (email: string) => {
+    if (!myTeam) return;
+    const warning = myTeam.submittedForJudging
+      ? `Remove ${email} from the team? This team is already submitted for judging, so you will need to submit again.`
+      : `Remove ${email} from the team?`;
+    if (!confirm(warning)) return;
+    setBusy(true);
+    setError('');
+    try {
+      const team = await removeTeammate(myTeam.id, email);
+      setMyTeam(team);
+      await refreshTeams();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove teammate');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const handleLeave = async () => {
     if (!myTeam || !confirm('Are you sure you want to leave this team?')) return;
     setBusy(true);
@@ -623,10 +643,17 @@ function TeamView({ user }: { user: User | null }) {
             </button>
           </div>
 
+          <div className="mb-4 bg-amber-950/50 border border-amber-300/50 rounded-lg p-4">
+            <p className="text-amber-100">
+              All team members must join this team before you submit for judging. Use this exact project name on Devpost.
+            </p>
+          </div>
+
           <div className="space-y-3">
             {myTeam.memberEmails.map((email) => {
               const pending = (myTeam.pendingCheckInEmails || []).map((e) => e.toLowerCase());
               const checkedIn = !pending.includes(email.toLowerCase());
+              const isYou = email.toLowerCase() === user?.email?.toLowerCase();
               return (
               <div key={email} className="bg-white/5 rounded-lg p-4 border border-white/10">
                 <div className="flex items-center gap-3">
@@ -634,14 +661,23 @@ function TeamView({ user }: { user: User | null }) {
                     <span className="text-white">{email.charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-white">{email === user?.email ? user?.name || email : email}</p>
+                    <p className="text-white">{isYou ? user?.name || email : email}</p>
                     <p className="text-sm text-white/80">{email}</p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded ${checkedIn ? 'bg-emerald-900/70 text-emerald-200' : 'bg-white/10 text-white/70'}`}>
                     {checkedIn ? 'Checked in' : 'Not checked in'}
                   </span>
-                  {email === user?.email && (
+                  {isYou ? (
                     <span className="bg-[#000000] text-white text-xs px-2 py-1 rounded">You</span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void handleRemoveTeammate(email)}
+                      className="bg-white/10 hover:bg-white/20 text-white text-xs px-2 py-1 rounded disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
                   )}
                 </div>
               </div>
@@ -655,6 +691,9 @@ function TeamView({ user }: { user: User | null }) {
               {myTeam.project && (
                 <p className="text-white mt-2">Project: {myTeam.project}</p>
               )}
+              <p className="text-amber-100 text-sm mt-2">
+                Use this exact project name on Devpost.
+              </p>
               {myTeam.submittedAt && (
                 <p className="text-white/70 text-sm mt-1">
                   {new Date(myTeam.submittedAt).toLocaleString()}
@@ -673,6 +712,9 @@ function TeamView({ user }: { user: User | null }) {
                   placeholder="Enter the project name"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder:text-white/50 focus:outline-none focus:border-white transition-colors"
                 />
+                <p className="text-amber-100 text-sm mt-2">
+                  This must be the same project name you use on Devpost.
+                </p>
               </div>
               {(myTeam.pendingCheckInEmails || []).length > 0 && (
                 <p className="text-amber-200 text-sm">

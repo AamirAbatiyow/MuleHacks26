@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
     referredBy: { type: String, default: null, trim: true, maxlength: 80 },
     isAdmin: { type: Boolean, default: false },
     isScanner: { type: Boolean, default: false },
+    isJudge: { type: Boolean, default: false },
     passwordResetTokenHash: { type: String, default: null },
     passwordResetExpiresAt: { type: Date, default: null },
   },
@@ -57,6 +58,7 @@ export function toPublicUser(doc) {
     referredBy: user.referredBy || null,
     isAdmin: Boolean(user.isAdmin),
     isScanner: Boolean(user.isScanner),
+    isJudge: Boolean(user.isJudge),
   };
 }
 

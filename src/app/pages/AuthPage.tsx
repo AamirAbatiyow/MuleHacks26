@@ -39,8 +39,8 @@ export function AuthPage() {
         await register(email, password, lateToken);
         navigate('/onboarding');
       } else {
-        const { isAdmin, isScanner } = await login(email, password);
-        navigate(isScanner ? '/scan' : isAdmin ? '/admin' : '/dashboard');
+        const { isAdmin, isScanner, isJudge } = await login(email, password);
+        navigate(isJudge ? '/judge' : isScanner ? '/scan' : isAdmin ? '/admin' : '/dashboard');
       }
     } catch (err) {
       if (err instanceof ApiError) {

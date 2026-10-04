@@ -18,6 +18,7 @@ export function AdminRoute({ children }: { children: ReactNode }) {
   }
 
   if (!user.isAdmin) {
+    if (user.isJudge) return <Navigate to="/judge" replace />;
     return <Navigate to={user.isScanner ? "/scan" : "/dashboard"} replace />;
   }
 
