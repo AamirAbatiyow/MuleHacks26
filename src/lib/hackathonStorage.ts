@@ -21,6 +21,10 @@ export type StoredTeam = {
   code: string;
   project?: string;
   memberEmails: string[];
+  submittedForJudging?: boolean;
+  submittedAt?: string | null;
+  submittedByEmail?: string | null;
+  pendingCheckInEmails?: string[];
 };
 
 export type PublicUserRow = {
@@ -131,6 +135,14 @@ export async function leaveTeam(teamId: string): Promise<void> {
     method: "PATCH",
     body: JSON.stringify({ leave: true }),
   });
+}
+
+export async function submitTeamForJudging(teamId: string, project: string): Promise<StoredTeam> {
+  const data = await apiFetch<{ team: StoredTeam }>(`/api/teams/${teamId}/submit`, {
+    method: "POST",
+    body: JSON.stringify({ project }),
+  });
+  return data.team;
 }
 
 export async function getTopReferrer(): Promise<{ name: string; count: number } | null> {

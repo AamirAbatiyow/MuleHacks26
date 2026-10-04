@@ -21,6 +21,9 @@ const teamSchema = new mongoose.Schema(
         message: "Teams can have at most 4 members.",
       },
     },
+    submittedForJudging: { type: Boolean, default: false },
+    submittedAt: { type: Date, default: null },
+    submittedByEmail: { type: String, default: null, lowercase: true, trim: true },
   },
   { timestamps: true }
 );
@@ -34,6 +37,10 @@ export function toStoredTeam(doc) {
     code: t.code,
     project: t.project || "",
     memberEmails: Array.isArray(t.memberEmails) ? t.memberEmails : [],
+    submittedForJudging: Boolean(t.submittedForJudging),
+    submittedAt: t.submittedAt ? new Date(t.submittedAt).toISOString() : null,
+    submittedByEmail: t.submittedByEmail || null,
+    pendingCheckInEmails: Array.isArray(t.pendingCheckInEmails) ? t.pendingCheckInEmails : [],
   };
 }
 

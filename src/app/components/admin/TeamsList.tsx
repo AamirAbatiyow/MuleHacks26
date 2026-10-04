@@ -50,12 +50,26 @@ export function TeamsList() {
                   {t.code}
                 </span>
               </div>
-              {t.project && <p className="text-white/70 text-sm mb-3">{t.project}</p>}
+              <p className={`text-xs mb-3 ${t.submittedForJudging ? "text-emerald-300" : "text-white/50"}`}>
+                {t.submittedForJudging ? "Submitted for judging" : "Not submitted"}
+              </p>
+              <p className="text-white/80 text-sm mb-3">
+                Project: {t.project || "Not submitted"}
+              </p>
               <p className="text-white/50 text-xs mb-2">Members ({t.memberEmails.length})</p>
               <ul className="text-sm text-white/80 space-y-1">
-                {t.memberEmails.map((e) => (
-                  <li key={e}>{e}</li>
-                ))}
+                {t.memberEmails.map((e) => {
+                  const pending = (t.pendingCheckInEmails || []).map((email) => email.toLowerCase());
+                  const checkedIn = !pending.includes(e.toLowerCase());
+                  return (
+                    <li key={e}>
+                      {e}{" "}
+                      <span className={checkedIn ? "text-emerald-300" : "text-white/50"}>
+                        ({checkedIn ? "checked in" : "not checked in"})
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

@@ -34,6 +34,7 @@ import {
   createTeam,
   joinTeam,
   leaveTeam,
+  submitTeamForJudging,
   type StoredAnnouncement,
   type StoredTeam,
 } from '@/lib/hackathonStorage';
@@ -403,6 +404,7 @@ function TeamView({ user }: { user: User | null }) {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [teamCode, setTeamCode] = useState('');
   const [teamName, setTeamName] = useState('');
+  const [projectName, setProjectName] = useState('');
   const [error, setError] = useState('');
 
   const refreshTeams = async () => {
@@ -413,6 +415,7 @@ function TeamView({ user }: { user: User | null }) {
       : null;
     setMyTeam(mine);
     setOtherTeams(teams.filter((t) => t.id !== mine?.id));
+    if (mine?.project) setProjectName(mine.project);
   };
 
   useEffect(() => {
@@ -480,6 +483,25 @@ function TeamView({ user }: { user: User | null }) {
       await refreshTeams();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to leave team');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleSubmitForJudging = async () => {
+    if (!myTeam) return;
+    if (!projectName.trim()) {
+      setError('Enter your project name to submit for judging.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const team = await submitTeamForJudging(myTeam.id, projectName.trim());
+      setMyTeam(team);
+      await refreshTeams();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit for judging');
     } finally {
       setBusy(false);
     }
@@ -590,7 +612,6 @@ function TeamView({ user }: { user: User | null }) {
             <div>
               <h3 className="text-2xl text-white mb-2">{myTeam.name}</h3>
               <p className="text-white">Team Code: {myTeam.code}</p>
-              {myTeam.project && <p className="text-white/80 text-sm mt-1">{myTeam.project}</p>}
             </div>
             <button
               disabled={busy}
@@ -603,7 +624,10 @@ function TeamView({ user }: { user: User | null }) {
           </div>
 
           <div className="space-y-3">
-            {myTeam.memberEmails.map((email) => (
+            {myTeam.memberEmails.map((email) => {
+              const pending = (myTeam.pendingCheckInEmails || []).map((e) => e.toLowerCase());
+              const checkedIn = !pending.includes(email.toLowerCase());
+              return (
               <div key={email} className="bg-white/5 rounded-lg p-4 border border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#000000] flex items-center justify-center">
@@ -613,13 +637,57 @@ function TeamView({ user }: { user: User | null }) {
                     <p className="text-white">{email === user?.email ? user?.name || email : email}</p>
                     <p className="text-sm text-white/80">{email}</p>
                   </div>
+                  <span className={`text-xs px-2 py-1 rounded ${checkedIn ? 'bg-emerald-900/70 text-emerald-200' : 'bg-white/10 text-white/70'}`}>
+                    {checkedIn ? 'Checked in' : 'Not checked in'}
+                  </span>
                   {email === user?.email && (
                     <span className="bg-[#000000] text-white text-xs px-2 py-1 rounded">You</span>
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
+
+          {myTeam.submittedForJudging ? (
+            <div className="mt-6 bg-emerald-950/50 border border-emerald-400/40 rounded-lg p-4">
+              <p className="text-emerald-200 font-medium">Submitted for judging</p>
+              {myTeam.project && (
+                <p className="text-white mt-2">Project: {myTeam.project}</p>
+              )}
+              {myTeam.submittedAt && (
+                <p className="text-white/70 text-sm mt-1">
+                  {new Date(myTeam.submittedAt).toLocaleString()}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="mt-6 space-y-3">
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Project name</label>
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  maxLength={120}
+                  placeholder="Enter the project name"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder:text-white/50 focus:outline-none focus:border-white transition-colors"
+                />
+              </div>
+              {(myTeam.pendingCheckInEmails || []).length > 0 && (
+                <p className="text-amber-200 text-sm">
+                  Every member must check in before this team can be submitted for judging.
+                </p>
+              )}
+              <button
+                disabled={busy || (myTeam.pendingCheckInEmails || []).length > 0 || !projectName.trim()}
+                onClick={() => void handleSubmitForJudging()}
+                className="w-full bg-[#6b0000] hover:bg-[#8b0000] text-white px-4 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Submit for judging
+              </button>
+            </div>
+          )}
 
           <p className="w-full mt-4 text-white/60 text-sm text-center">
             Share code <span className="font-mono text-white">{myTeam.code}</span> to invite members
