@@ -1,11 +1,9 @@
-# Mule Hacks 2026
+# MuleHacks Hacker App
 
 The event site, registration flow, check-in desk, and judging console for Mule Hacks, a 24-hour student hackathon at the University of Central Missouri on October 3–4, 2026.
 
-**[Live site](https://mule-hacks-landing-2026.fly.dev)**
-
 <p align="center">
-  <img src="docs/screenshots/landing-hero.jpg" alt="Mule Hacks 2026 landing page hero" />
+  <img src="docs/screenshots/landing-hero.jpg" alt="MuleHacks Hacker App landing page hero" />
 </p>
 
 <p align="center">
@@ -38,10 +36,29 @@ Judges shared one login, typed their own names, and scored submitted teams on a 
   <img src="docs/screenshots/team-page.jpg" alt="Team dashboard with project submit reminder" />
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/check-in.jpg" alt="Organizer QR check-in scanner" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/judge-teams.jpg" alt="Judge view of submitted teams" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/judge-rubric.jpg" alt="Judge rubric scored 1 to 5" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/admin-dashboard.jpg" alt="Admin dashboard with live event counts" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/admin-judging.jpg" alt="Admin judging averages and individual sheets" />
+</p>
 
 ## Stack
 
-React and Vite on the client, Express and MongoDB Atlas on the server, deployed on Fly.io.
+React and Vite on the client, Express and MongoDB Atlas on the server, previously deployed on Fly.io.
 
 ## Run locally
 
