@@ -25,35 +25,11 @@ Hackers formed **28** teams in the dashboard, invited teammates with a short cod
 Judges shared one login, typed their own names, and scored submitted teams on a six-category rubric for Devpost and live demo as separate sheets. **9** judges filed **95** score sheets (69 live demos and 26 Devpost reviews). The admin console averaged every sheet per team so organizers could read a 30-point total without opening each rubric.
 
 <p align="center">
-  <img src="docs/screenshots/sign-in.jpg" alt="Sign in page with registration closed" />
-</p>
-
-<p align="center">
   <img src="docs/screenshots/participant-dashboard.jpg" alt="Participant check-in QR on the dashboard" />
 </p>
 
 <p align="center">
   <img src="docs/screenshots/team-page.jpg" alt="Team dashboard with project submit reminder" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/check-in.jpg" alt="Organizer QR check-in scanner" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/judge-teams.jpg" alt="Judge view of submitted teams" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/judge-rubric.jpg" alt="Judge rubric scored 1 to 5" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/admin-dashboard.jpg" alt="Admin dashboard with live event counts" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/admin-judging.jpg" alt="Admin judging averages and individual sheets" />
 </p>
 
 ## Stack
