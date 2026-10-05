@@ -38,25 +38,6 @@ Judges shared one login, typed their own names, and scored submitted teams on a 
   <img src="docs/screenshots/team-page.jpg" alt="Team dashboard with project submit reminder" />
 </p>
 
-<p align="center">
-  <img src="docs/screenshots/check-in.jpg" alt="Organizer QR check-in scanner" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/judge-teams.jpg" alt="Judge view of submitted teams" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/judge-rubric.jpg" alt="Judge rubric scored 1 to 5" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/admin-dashboard.jpg" alt="Admin dashboard with live event counts" />
-</p>
-
-<p align="center">
-  <img src="docs/screenshots/admin-judging.jpg" alt="Admin judging averages and individual sheets" />
-</p>
 
 ## Stack
 
