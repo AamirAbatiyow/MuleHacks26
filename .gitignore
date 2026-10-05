@@ -6,7 +6,7 @@ dist/
 build/
 .vite/
 
-# Environment files
+# Environment / secrets
 .env
 .env.*
 !.env.example
@@ -19,20 +19,23 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Editor and IDE files
+# Editor and IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Test and coverage output
+# Test / coverage / cache
 coverage/
-
-# Cache
 .cache/
 .parcel-cache/
-node_modules
+.playwright/
+test-results/
+
+# One-off local scripts
+tmp-*.mjs
+tmp-*.js
